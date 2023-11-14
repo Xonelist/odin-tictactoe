@@ -49,24 +49,46 @@ function gameController(
         activePlayer = activePlayer === players[0] ? players[1] : players[0];
     }
 
-    
+    function Turn() {
+        logGame(`${activePlayer['name']}'s Turn`);
+
+    }
+
     const getActivePlayers = () => activePlayer;
 
     const playRound = (row, col) => {
         if (board.getBoard()[row][col].getValue() === 0) {
             board.getBoard()[row][col].addToken(activePlayer.token);
-            winCondition(row, col)
+            if (winCondition(row, col)) {
+                logGame("game is over, ");
+                return;
+            }
             board.getConsoleBoard();
             switchPlayer();
+            Turn();
         } else {
-            console.log(`${getActivePlayers()['name']} doing an ilegal move`);
+            logGame(`${getActivePlayers()['name']} doing an ilegal move`);
         }
     }
 
     const winCondition = (row, col) => {
-        if (board.getBoard()[row].every(token => token.getValue() === activePlayer.token)) {
-            console.log(`The winner is ${activePlayer.name}`)
+        const horizontal = board.getBoard()[row];
+        const vertical = board.getBoard().map( row => row[col]);
+        const diagonal1 = [board.getBoard()[0][0], board.getBoard()[1][1], board.getBoard()[2][2]];
+        const diagonal2 = [board.getBoard()[0][2], board.getBoard()[1][1], board.getBoard()[2][0]]
+                      
+        if (horizontal.every(token => token.getValue() === activePlayer.token) ||
+            vertical.every(token => token.getValue() === activePlayer.token) ||
+            diagonal1.every(token => token.getValue() === activePlayer.token) ||
+            diagonal2.every(token => token.getValue() === activePlayer.token)) {
+            logGame(`The winner is ${activePlayer.name}`);
+            return true;
         }
+    }
+
+    const logGame = (msg) => {
+        const logGame = document.querySelector(".log");
+        logGame.innerHTML += `-- > ${msg}<br>`;
     }
     return {getActivePlayers, playRound}
 }
