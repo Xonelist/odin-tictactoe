@@ -1,0 +1,18 @@
+.main {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+.board {
+    --sizeCell: 100px;
+    display: grid;
+    grid: repeat(3, var(--sizeCell)) / repeat(3, var(--sizeCell)) ;
+    gap: 1px;
+}
+
+.cell {
+    display: flex;
+    justify-content: center;
+    border: 1px solid black;
+    font-size: 85px;
+}

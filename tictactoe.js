@@ -88,7 +88,20 @@ function gameController(
 
     const logGame = (msg) => {
         const logGame = document.querySelector(".log");
-        logGame.innerHTML += `-- > ${msg}<br>`;
+        logGame.innerHTML = `-- > ${msg} < -- <br>`;
     }
     return {getActivePlayers, playRound}
+}
+
+
+// HTML Build
+const boardHTML = document.querySelector(".board");
+
+for (rows = 0; rows < 3; rows++) {
+    for (cols = 0; cols < 3; cols++) {
+        const col = document.createElement('div')
+        col.className = `#${rows}${cols} row-${rows} col-${cols} cell`;
+        col.addEventListener('click', (cell)=>console.log(cell.target.className.slice(1,3)));
+        boardHTML.appendChild(col);
+    }
 }
