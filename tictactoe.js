@@ -44,28 +44,33 @@ function gameController(
     }]
 
     let activePlayer = players[0]
+    let roundTurn = 0;
 
     function switchPlayer() {
         activePlayer = activePlayer === players[0] ? players[1] : players[0];
     }
 
-    function Turn() {
+    function turn() {
         logGame(`${activePlayer['name']}'s Turn`);
-
+        roundTurn++
+        document.querySelector('.turn').innerHTML = `turn ${getTurn()}`
     }
+
+    const getTurn = () => roundTurn;
 
     const getActivePlayers = () => activePlayer;
 
     const playRound = (row, col) => {
         if (board.getBoard()[row][col].getValue() === 0) {
             board.getBoard()[row][col].addToken(activePlayer.token);
-            if (winCondition(row, col)) {
-                logGame("game is over, ");
+            document.querySelector(`.c${row}${col}`).innerHTML = activePlayer.token;
+            if (winCondition(row, col) || getTurn() === 10) {
+                logGame("game is over");
                 return;
             }
             board.getConsoleBoard();
             switchPlayer();
-            Turn();
+            turn();
         } else {
             logGame(`${getActivePlayers()['name']} doing an ilegal move`);
         }
@@ -90,6 +95,8 @@ function gameController(
         const logGame = document.querySelector(".log");
         logGame.innerHTML = `-- > ${msg} < -- <br>`;
     }
+
+    turn()
     return {getActivePlayers, playRound}
 }
 
@@ -100,8 +107,13 @@ const boardHTML = document.querySelector(".board");
 for (rows = 0; rows < 3; rows++) {
     for (cols = 0; cols < 3; cols++) {
         const col = document.createElement('div')
-        col.className = `#${rows}${cols} row-${rows} col-${cols} cell`;
-        col.addEventListener('click', (cell)=>console.log(cell.target.className.slice(1,3)));
+        col.className = `c${rows}${cols} row-${rows} col-${cols} cell`;
+        col.addEventListener('click', (cell)=>{
+            const action = cell.target.className.slice(1,3).split('');
+            a.playRound(Number(action[0]), Number(action[1]))
+        });
         boardHTML.appendChild(col);
     }
 }
+
+a = gameController()
