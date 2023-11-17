@@ -6,7 +6,7 @@ function gameBoard () {
     for(r = 0;r < row; r++) {
         board[r] = [];
         for (c = 0; c < column; c++) {
-            board[r].push(cell());
+            board[r].push(cell(`${r}${c}`));
         }
     }
 
@@ -18,15 +18,16 @@ function gameBoard () {
     return {getBoard, getConsoleBoard}
 }  
 
-function cell() {
+function cell(id) {
     let value = 0;
-
+    const idCell = id;  
     const getValue = () => value;
+    const getId = () =>idCell;
     const addToken = (player) =>{
         value = player;
     }
-
-    return {addToken,getValue}
+    
+    return {addToken,getValue, getId}
 }
 
 function gameController(
@@ -51,7 +52,7 @@ function gameController(
     }
 
     function turn() {
-        logGame(`${activePlayer['name']}'s Turn`);
+        logGame('newRound');
         roundTurn++
         document.querySelector('.turn').innerHTML = `turn ${getTurn()}`
     }
@@ -62,17 +63,20 @@ function gameController(
 
     const playRound = (row, col) => {
         if (board.getBoard()[row][col].getValue() === 0) {
+            turn();
             board.getBoard()[row][col].addToken(activePlayer.token);
             document.querySelector(`.c${row}${col}`).innerHTML = activePlayer.token;
-            if (winCondition(row, col) || getTurn() === 10) {
-                logGame("game is over");
+            if (winCondition(row, col)) {
+                logGame('winner');
                 return;
+            } else if (getTurn() === 10) {
+                logGame('noRound')
             }
             board.getConsoleBoard();
             switchPlayer();
-            turn();
+            
         } else {
-            logGame(`${getActivePlayers()['name']} doing an ilegal move`);
+            logGame('illegalMove');
         }
     }
 
@@ -81,19 +85,28 @@ function gameController(
         const vertical = board.getBoard().map( row => row[col]);
         const diagonal1 = [board.getBoard()[0][0], board.getBoard()[1][1], board.getBoard()[2][2]];
         const diagonal2 = [board.getBoard()[0][2], board.getBoard()[1][1], board.getBoard()[2][0]]
-                      
-        if (horizontal.every(token => token.getValue() === activePlayer.token) ||
-            vertical.every(token => token.getValue() === activePlayer.token) ||
-            diagonal1.every(token => token.getValue() === activePlayer.token) ||
-            diagonal2.every(token => token.getValue() === activePlayer.token)) {
-            logGame(`The winner is ${activePlayer.name}`);
-            return true;
-        }
+        const lines = [horizontal,vertical,diagonal1,diagonal2]
+        let cellIds;
+        lines.forEach(line => {
+            if (line.every(token => token.getValue() === activePlayer.token)) {
+                cellIds = line.map(cell => {
+                    document.querySelector(`.c${cell.getId()}`).style.background = 'red'
+                    return cell.getId()
+                });
+            }
+        })
+        return cellIds;
     }
 
     const logGame = (msg) => {
         const logGame = document.querySelector(".log");
-        logGame.innerHTML = `-- > ${msg} < -- <br>`;
+        const logLib = {
+            'winner': `==>  The winner is ${getActivePlayers()['name']}  <==`,
+            'newRound': `==>  ${getActivePlayers()['name']}'s Turn  <==`,
+            'noRound' : `==>  Game is Over, All cell has been filled  <==`,
+            'illegalMove' : `===>  ${getActivePlayers()['name']} doing an illegal move  <==`
+        }
+        logGame.innerHTML = logLib[msg];
     }
 
     turn()
@@ -102,18 +115,21 @@ function gameController(
 
 
 // HTML Build
-const boardHTML = document.querySelector(".board");
+function gameUI() {
 
-for (rows = 0; rows < 3; rows++) {
-    for (cols = 0; cols < 3; cols++) {
-        const col = document.createElement('div')
-        col.className = `c${rows}${cols} row-${rows} col-${cols} cell`;
-        col.addEventListener('click', (cell)=>{
-            const action = cell.target.className.slice(1,3).split('');
-            a.playRound(Number(action[0]), Number(action[1]))
-        });
-        boardHTML.appendChild(col);
+    const boardHTML = document.querySelector(".board");
+    const game = gameController()
+    for (rows = 0; rows < 3; rows++) {
+        for (cols = 0; cols < 3; cols++) {
+            const col = document.createElement('div')
+            col.className = `c${rows}${cols} row-${rows} col-${cols} cell`;
+            col.addEventListener('click', (cell)=>{
+                const action = cell.target.className.slice(1,3).split('');
+                game.playRound(Number(action[0]), Number(action[1]))
+            });
+            boardHTML.appendChild(col);
+        }
     }
 }
 
-a = gameController()
+gameUI()
